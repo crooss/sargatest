@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>deck.gl + Mapbox Integration</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://unpkg.com/deck.gl@^6.2.0/deckgl.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v1.9.1/mapbox-gl.js"></script>
+    <script src="mapboxgl-minimap-master/mapboxgl-control-minimap.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="https://api.tiles.mapbox.com/mapbox-gl-js/v1.9.1/mapbox-gl.css">
+    <link rel='stylesheet' href='CSS/estilos.css'/>
+
+    <style type="text/css">
+       
+    </style>
+    
+</head>
+  <body>
+  <div class="main">
+      <button class="openbtn" onclick="openNav()">Menu</button>  
+    <div id="map"></div>
+      <div id='coordenadas'></div>
+  </div>
+  
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">X</a>
+    <a href="#">Fechas</a>
+  </div>
+
+
+
+  <script>
+  function openNav() {
+      document.getElementById("mySidebar").style.width = "250px";
+      document.getElementById("main").style.marginLeft = "250px";
+    }
+    
+    function closeNav() {
+      document.getElementById("mySidebar").style.width = "0";
+      document.getElementById("main").style.marginLeft= "0";
+    }
+  </script>
+  
+
+
+
+  <script type="text/javascript">
+    const {MapboxLayer, GeoJsonLayer} = deck;
+
+    // Get a mapbox API access token
+    mapboxgl.accessToken = 'pk.eyJ1IjoiY3Jvb3NzIiwiYSI6ImNrODkwYjl2czAxeXQzZXF6aTh0aWs5dG8ifQ.3KvFILvlEOBjrlHXyFKl1A';
+
+    // Initialize mapbox map
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/crooss/cinkn5kaw001fjvnmgvl5m1ci',
+      center: [-84.6, 19.5],
+      zoom: 6
+    });
+
+    // Create a mapbox-compatible deck.gl layer
+    const myDeckLayer = new MapboxLayer({
+      id: 'my-scatterplot',
+      type: GeoJsonLayer,
+      data: './data/Repro.geojson',
+      opacity: 1,
+      stroked: true,
+      filled: true,
+      extruded: true,
+      wireframe: true,
+      getElevation: 0,
+      getFillColor: [0,255,0],
+      getLineColor: [0, 255, 0],
+      pickable: true
+    });
+
+    // Insert the layer before mapbox labels
+    map.on('load', () => {
+      map.addLayer(myDeckLayer, 'waterway-label');
+    });
+
+    map.on("style.load", function () {
+        // Possible position values are 'bottom-left', 'bottom-right', 'top-left', 'top-right'
+        map.addControl(new mapboxgl.Minimap({
+              id: "mapboxgl-minimap",
+              width: "320px",
+              height: "180px",
+              style: "mapbox://styles/mapbox/streets-v8",
+              center: [-84, 21.18],
+              zoom: 6,
+
+              // should be a function; will be bound to Minimap
+              zoomAdjust:null,
+              // if parent map zoom >= 18 and minimap zoom >= 14, set minimap zoom to 16
+              zoomLevels:[
+                  [18, 14, 15],
+                  [16, 12, 13],
+                  [14, 10, 12],
+                  [12, 8, 11],
+                  [10, 6, 7],
+                  [8,5,3],
+                  [6,4,2],
+                  [4,3,1],
+                  [2,2,0],
+                  [1,1,0],
+                  ],
+
+              lineColor: "#08F",
+              lineWidth: 3,
+              lineOpacity: 1,
+
+              fillColor: "#F80",
+              fillOpacity: 0.25,
+
+              dragPan: true,
+              scrollZoom: false,
+              boxZoom: false,
+              dragRotate: false,
+              keyboard: false,
+              doubleClickZoom: false,
+              touchZoomRotate: false
+        }), 'bottom-left');
+    });
+    map.addControl(new mapboxgl.NavigationControl());
+    map.addControl(new mapboxgl.FullscreenControl());
+    map.dragRotate.disable();
+    map.on('mousemove', function (e) {
+        document.getElementById('coordenadas').innerHTML = JSON.stringify(e.lngLat);
+    });
+
+
+  </script>
+
+</body>
+</html>
